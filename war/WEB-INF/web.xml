@@ -8,11 +8,19 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	<servlet>
 		<servlet-name>repeater</servlet-name>
 		<servlet-class>me.vukotic.setmeup.repeater</servlet-class>
+	</servlet>	
+	<servlet>
+		<servlet-name>creator</servlet-name>
+		<servlet-class>me.vukotic.setmeup.creator</servlet-class>
 	</servlet>
 	
 	<servlet-mapping>
 		<servlet-name>repeater</servlet-name>
 		<url-pattern>/repeater</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>creator</servlet-name>
+		<url-pattern>/creator</url-pattern>
 	</servlet-mapping>
 	
 	<welcome-file-list>

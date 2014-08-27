@@ -56,7 +56,15 @@
 		}
 
 		$(document).ready(function() {
-
+			
+			$.ajaxSetup({
+				async : false
+			});
+			
+			$("#loading").show();
+			showCurrentSession();
+			$("#loading").hide();
+			
 			$("#tabs").tabs({
 				activate : function(event, ui) {
 					if (ui.newPanel.index() == 1) { // loading current sessions
@@ -88,9 +96,6 @@
 				}
 			});
 
-			$.ajaxSetup({
-				async : false
-			});
 			
 			$( "#dp_from" ).datepicker();
 			$( "#dp_to" ).datepicker();
@@ -113,8 +118,12 @@
 			});			
 			
 			$("#b_Create").button().click(function() {
-				$.post("creator", {
-				}, function(data) {
+				var colNames = [];
+				$(".tb_cn").each(function(index) { 
+					if ($(this).val()!="ColumnName" && $(this).val()!="" )
+						colNames.push($(this).val()); 
+					});
+				$.post("creator", { title:$("#tb_title").val(), fr:$("dp_from").val(), fr:$("dp_to").val(), cn:colNames.join(",") }, function(data) {
 				});
 			});
 
@@ -153,58 +162,57 @@
 
 			<div id="tabs-2">
 				<br>
-				<table cellpadding="3" cellspacing="0" border="0" class="display"
-					id="ct" width="100%">
+				<table cellpadding="3" cellspacing="0" border="0" class="display" id="ct" width="100%">
 					<tbody>
-					<tr><th>Title:</th> <td><input id="tb_title" type="textbox" value="Session Title"></input> </td> </tr><br>
+					<tr><th>Title:</th> <td><input id="tb_title" type="text" value="Session Title"></input> </td> </tr><br>
 					<tr><th>From:</th> <td><input id="dp_from" type="text" ></input> </td> <th>To:</th> <td><input id="dp_to" type="text" ></input> </td> </tr><br>
 					<tr><th>Add columns</th> </tr>
 					<tr>
-						<th><input type="checkbox" id="check1"></th> 
-						<td><input id="tb_c1" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check1"></td> 
+						<!-- <th><input type="checkbox" id="check1"></th>  -->
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
 					<tr>
-						<th><input type="checkbox" id="check2"></th> 
-						<td><input id="tb_c2" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check2"></td> 
+						<!-- <th><input type="checkbox" id="check2"></th>  -->
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
 					<tr>
-						<th><input type="checkbox" id="check3"></th> 
-						<td><input id="tb_c3" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check3"></td> 
+						<!-- <th><input type="checkbox" id="check3"></th> --> 
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
 					<tr>
-						<th><input type="checkbox" id="check4"></th> 
-						<td><input id="tb_c4" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check4"></td> 
+						<!-- <th><input type="checkbox" id="check4"></th>  -->
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
 					<tr>
-						<th><input type="checkbox" id="check5"></th> 
-						<td><input id="tb_c5" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check5"></td> 
+						<!-- <th><input type="checkbox" id="check5"></th>  -->
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
 					<tr>
-						<th><input type="checkbox" id="check6"></th> 
-						<td><input id="tb_c6" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check6"></td> 
+						<!-- <th><input type="checkbox" id="check6"></th>  -->
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
 					<tr>
-						<th><input type="checkbox" id="check7"></th> 
-						<td><input id="tb_c7" type="textbox" value="column name"></input> </td>
-						<td>key:<input type="checkbox" id="check7"></td> 
+						<!-- <th><input type="checkbox" id="check7"></th>  -->
+						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
+						<td>key:<input type="checkbox" class="cb_key"></td> 
 						<td>type:<select class="s_type"></select></td>
 						<td>position:<input class="spinner" name="value"></td> 
 					</tr>
