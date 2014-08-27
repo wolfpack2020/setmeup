@@ -32,6 +32,7 @@
 			$.getJSON("repeater", {}, function(data) {
 				GD = data;
 			});
+			if (GD.headers.length==0) return;
 			$('#resTableSpace').dataTable({
 				"bJQueryUI" : true,
 				"data" : GD.results,
@@ -124,15 +125,14 @@
 				project.to=$("dp_to").val();
  				project.cols = [];
 				$(".tb_cn").each(function(index) { 
-					if ($(this).val()!="ColumnName" && $(this).val()!="" )
 						col={};
 						col.name=$(this).val();
-						//col.key=$(".cb_key").get(index).is(':checked');
-						//col.index=$(".s_type").get(index).val();
-						//col.type=$(".spinner").get(index).val();
+						col.key=$(".cb_key:eq("+index.toString()+")").is(':checked');
+						col.type=$(".s_type:eq("+index.toString()+")").val();
+						col.index= $(".spinner:eq("+index.toString()+")").spinner("value");
 						project.cols.push(col);
 					}); 
-				$.post("creator", {newProject:JSON.stringify(project)}, function(data) {});
+				$.post("creator", JSON.stringify(project), function(data) {}, "json");
 			});
 
 			$("#b_ShowCURLexample").button().click(function() {
