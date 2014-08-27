@@ -43,23 +43,31 @@ public class repeater extends HttpServlet {
 
 		if (req.getParameter("result") != null) {
 			log.warning("receiving the data ...");
-			JSONObject json = new JSONObject(req.getParameter("result"));
-
+			JSONObject json_result = new JSONObject(req.getParameter("result"));
+//			JSONArray json_keycolumns = new JSONArray(req.getParameter("keys"));
+			//loop over json_keycolumns array
+			// compare to keys of json_result to make sure these exist in json_result object - sanity check
+			// loop over json_result.keys and if column is also in json_keycolumns change the value to string and concatecate it up.
+			
 			Date currTime = new Date();
+			// if nothing in json_keycolumns do this:
 			Entity result = new Entity("Data");
+			//else
+			// Entity result = new Entity("Data", concatenated thing);
+			
 			result.setProperty("d_timestamp", currTime);
-			Iterator<?> keys = json.keys();
+			Iterator<?> keys = json_result.keys();
 
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				if (key.startsWith("s_"))
-					result.setProperty(key, json.getString(key));
+					result.setProperty(key, json_result.getString(key));
 				if (key.startsWith("b_"))
-					result.setProperty(key, json.getBoolean(key));
+					result.setProperty(key, json_result.getBoolean(key));
 				if (key.startsWith("i_"))
-					result.setProperty(key, json.getInt(key));
+					result.setProperty(key, json_result.getInt(key));
 				if (key.startsWith("d_"))
-					result.setProperty(key,new Date(json.getLong(key)) );
+					result.setProperty(key,new Date(json_result.getLong(key)) );
 			}
 
 			datastore.put(result);
