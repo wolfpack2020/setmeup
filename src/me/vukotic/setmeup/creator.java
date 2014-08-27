@@ -32,6 +32,16 @@ public class creator extends HttpServlet {
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		log.warning("creator got POSTed ...");
 
+		if (req.getParameter("title") != null){
+			Entity project = new Entity("Project");
+			Date currTime = new Date();
+			project.setProperty("timestamp", currTime);
+			datastore.put(project);
+//			for 
+			Entity column=new Entity("Column",project.getKey());
+//			project.setProperty("name");
+			
+		}
 //		if (req.getParameter("reset") != null) {
 //			log.warning("cleaning the data ...");
 //			Query q = new Query("Data").setKeysOnly();

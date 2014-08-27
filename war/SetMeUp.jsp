@@ -118,13 +118,21 @@
 			});			
 			
 			$("#b_Create").button().click(function() {
-				var colNames = [];
+				project = {};
+				project.title=$("#tb_title").val();
+				project.from=$("dp_from").val();
+				project.to=$("dp_to").val();
+ 				project.cols = [];
 				$(".tb_cn").each(function(index) { 
 					if ($(this).val()!="ColumnName" && $(this).val()!="" )
-						colNames.push($(this).val()); 
-					});
-				$.post("creator", { title:$("#tb_title").val(), fr:$("dp_from").val(), fr:$("dp_to").val(), cn:colNames.join(",") }, function(data) {
-				});
+						col={};
+						col.name=$(this).val();
+						//col.key=$(".cb_key").get(index).is(':checked');
+						//col.index=$(".s_type").get(index).val();
+						//col.type=$(".spinner").get(index).val();
+						project.cols.push(col);
+					}); 
+				$.post("creator", {newProject:JSON.stringify(project)}, function(data) {});
 			});
 
 			$("#b_ShowCURLexample").button().click(function() {
