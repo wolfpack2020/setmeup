@@ -53,19 +53,23 @@ public class repeater extends HttpServlet {
 			String proj = json_result.getString("project");
 			Filter pn = new FilterPredicate("name", FilterOperator.EQUAL, proj);
 			Query qp = new Query("Project").setKeysOnly().setFilter(pn);
-			Entity prkey = datastore.prepare(qp).asSingleEntity();
-			Query q = new Query("Column").setAncestor(prkey.getKey());
+			Entity pr = datastore.prepare(qp).asSingleEntity();
+			if (pr == null)
+				return;
+			Query q = new Query("Column").setAncestor(pr.getKey());
 
 			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
 
 			Date currTime = new Date();
-			Entity result = new Entity("Data");
+			Entity result = new Entity("Data", pr.getKey());
 			result.setProperty("d_timestamp", currTime);
 
 			Iterator<?> keys = json_result.keys();
 
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
+				if (key.equals("project"))
+					continue;
 				Boolean found = false;
 				for (Entity c : lRes) {
 					if (key.equals(c.getProperty("name"))) {
@@ -103,34 +107,57 @@ public class repeater extends HttpServlet {
 		List<String> h = new ArrayList<String>();
 
 		if (req.getParameter("project") != null) {
-			Query q = new Query("Data");
-			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-			log.warning("results: " + lRes.size());
-			for (Entity result : lRes) {
-				Map<String, Object> l = result.getProperties();
-				JSONArray res = new JSONArray();
 
-				for (Map.Entry<String, Object> entry : l.entrySet()) {
-					String k = entry.getKey();
-					if (!h.contains(k))
-						h.add(k);
-					Object v = entry.getValue();
-					if (k.startsWith("s_"))
-						res.put((String) v);
-					if (k.startsWith("i_"))
-						res.put((Long) v);
-					if (k.startsWith("b_"))
-						res.put((Boolean) v);
-					if (k.startsWith("d_"))
-						res.put((Date) v);
+			// looking up columns of that project
+			String proj = req.getParameter("project");
+			Filter pn = new FilterPredicate("name", FilterOperator.EQUAL, proj);
+			Query qp = new Query("Project").setKeysOnly().setFilter(pn);
+			Entity pr = datastore.prepare(qp).asSingleEntity();
+			if (pr == null)
+				return;
+			Query cq = new Query("Column").setAncestor(pr.getKey());
+			List<Entity> lColumns = datastore.prepare(cq).asList(FetchOptions.Builder.withDefaults());
+
+			Query q = new Query("Data").setAncestor(pr.getKey());
+			List<Entity> lData = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+			log.warning("results: " + lData.size());
+
+			for (Entity col : lColumns)
+				h.add((String) col.getProperty("name"));
+
+			for (Entity result : lData) {
+				JSONArray res = new JSONArray();
+				Map<String, Object> l = result.getProperties();
+				for (Entity col : lColumns) {
+					for (Map.Entry<String, Object> entry : l.entrySet()) {
+						String k = entry.getKey();
+
+						if (!k.equals((String) col.getProperty("name")))
+							continue;
+
+						String ctype = (String) col.getProperty("type");
+
+						Object v = entry.getValue();
+						if (ctype.equals("s"))
+							res.put((String) v);
+						if (ctype.equals("i"))
+							res.put((Long) v);
+						if (ctype.equals("f"))
+							res.put((Double) v);
+						if (ctype.equals("b"))
+							res.put((Boolean) v);
+						if (ctype.equals("d"))
+							res.put((Date) v);
+					}
 				}
 				results.put(res);
 			}
+
 		}
 		data.put("results", results);
 
 		for (String he : h)
-			headers.put(new JSONObject().put("title", he.substring(2)));
+			headers.put(new JSONObject().put("title", he));
 		data.put("headers", headers);
 		resp.getWriter().print(data);
 

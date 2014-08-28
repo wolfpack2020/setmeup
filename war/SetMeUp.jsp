@@ -89,7 +89,7 @@
 					if (ui.newPanel.index() == 2) { // create new session
 						console.log("loading tab 2.");
 					} else {
-						resTableSpace.fnClearTable();
+						//resTableSpace.fnClearTable();
 					}
 
 					if (ui.newPanel.index() == 3) { // Archive
