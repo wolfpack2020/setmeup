@@ -52,7 +52,7 @@
 		}
 		
 		function showCurlExample(){
-			String example='curl -d result="{project:';
+			example='curl -d result="{project:';
 			example+='\"' + $("#tb_title").val() + '\"';
 			alert(example+',s_domain:\"triumf.ca\",s_nickname:\"desilva\",s_identity:\"/C=CA/O=Grid/OU=westgrid.ca/CN=Asoka De Silva mwt-125\",b_os:True,b_grid:True,b_env:False,b_inputFiles:False,b_panda:True,b_fax:True,b_asg:False}" "http://setmeup-atlas.appspot.com/repeater"');
 		}
@@ -88,9 +88,6 @@
 
 					if (ui.newPanel.index() == 2) { // create new session
 						console.log("loading tab 2.");
-						$("#loading").show();
-						createSession();
-						$("#loading").hide();
 					} else {
 						resTableSpace.fnClearTable();
 					}
