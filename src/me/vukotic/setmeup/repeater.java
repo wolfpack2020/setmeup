@@ -21,6 +21,9 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 
 @SuppressWarnings("serial")
 public class repeater extends HttpServlet {
@@ -32,30 +35,32 @@ public class repeater extends HttpServlet {
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		log.warning("repeater got POSTed ...");
 
-		if (req.getParameter("reset") != null) {
-			log.warning("cleaning the data ...");
-			Query q = new Query("Data").setKeysOnly();
-			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-			for (Entity e:lRes)
-				datastore.delete(e.getKey());
-			return;
-		}
+//		if (req.getParameter("reset") != null) {
+//			log.warning("cleaning the data ...");
+//			Query q = new Query("Data").setKeysOnly();
+//			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+//			for (Entity e:lRes)
+//				datastore.delete(e.getKey());
+//			return;
+//		}
 
 		if (req.getParameter("result") != null) {
 			log.warning("receiving the data ...");
 			JSONObject json_result = new JSONObject(req.getParameter("result"));
-//			JSONArray json_keycolumns = new JSONArray(req.getParameter("keys"));
-			//loop over json_keycolumns array
-			// compare to keys of json_result to make sure these exist in json_result object - sanity check
-			// loop over json_result.keys and if column is also in json_keycolumns change the value to string and concatecate it up.
+
+			// looking up columns of that project
+			String proj=json_result.getString("project");
+			Filter pn = new FilterPredicate("name", FilterOperator.EQUAL, proj);
+			Query qp = new Query("Project").setKeysOnly().setFilter(pn);
+			Entity prkey=datastore.prepare(qp).asSingleEntity();
+			Query q = new Query("Column").setAncestor(prkey.getKey());
+			
+			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
 			
 			Date currTime = new Date();
-			// if nothing in json_keycolumns do this:
-			Entity result = new Entity("Data");
-			//else
-			// Entity result = new Entity("Data", concatenated thing);
-			
+			Entity result = new Entity("Data");			
 			result.setProperty("d_timestamp", currTime);
+			
 			Iterator<?> keys = json_result.keys();
 
 			while (keys.hasNext()) {
@@ -80,7 +85,7 @@ public class repeater extends HttpServlet {
 		log.warning("repeater to deliver the data ...");
 
 		resp.setContentType("application/json");
-
+		if (req.getParameter("project") == null) return;
 		Query q = new Query("Data");
 		List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
 		log.warning("results: " + lRes.size());

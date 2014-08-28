@@ -2,6 +2,8 @@ package me.vukotic.setmeup;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -42,6 +44,7 @@ public class creator extends HttpServlet {
 
 		JSONObject p = null;
 		try {
+			log.warning(sb.toString());
 			p = new JSONObject(sb.toString());
 		} catch (Exception e) {
 			log.severe("could not parse to JSONObject");
@@ -54,19 +57,24 @@ public class creator extends HttpServlet {
 		Date currTime = new Date();
 		project.setProperty("timestamp", currTime);
 		project.setProperty("name", p.getString("title"));
+
+		Date date = new Date(p.getLong("from"));
+		project.setProperty("startDate", date);
+		date = new Date(p.getLong("to"));
+		project.setProperty("endDate", date);
+
 		datastore.put(project);
-		JSONArray cols=p.getJSONArray("cols");
-		for (int i = 0 ; i < cols.length(); i++) {
-	        JSONObject col = cols.getJSONObject(i);
-	        Entity column = new Entity("Column", project.getKey());
-	        column.setProperty("name", col.getString("name"));
-	        column.setProperty("key", col.getBoolean("key"));
-	        column.setProperty("type", col.getString("type"));
-	        column.setProperty("index", col.getInt("index"));
+		JSONArray cols = p.getJSONArray("cols");
+		for (int i = 0; i < cols.length(); i++) {
+			JSONObject col = cols.getJSONObject(i);
+			Entity column = new Entity("Column", project.getKey());
+			column.setProperty("name", col.getString("name"));
+			column.setProperty("key", col.getBoolean("key"));
+			column.setProperty("type", col.getString("type"));
+			column.setProperty("index", col.getInt("index"));
 			datastore.put(column);
 		}
-		
-		
+
 		// if (req.getParameter("reset") != null) {
 		// log.warning("cleaning the data ...");
 		// Query q = new Query("Data").setKeysOnly();
@@ -118,39 +126,17 @@ public class creator extends HttpServlet {
 
 		log.warning("creator get a GET ...");
 
-		
-
-		// resp.setContentType("application/json");
-		//
-		// Query q = new Query("Data");
-		// List<Entity> lRes =
-		// datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-		// log.warning("results: " + lRes.size());
-		// JSONObject data=new JSONObject();
-		// JSONArray results = new JSONArray();
-		// JSONArray headers = new JSONArray();
-		// List<String> h = new ArrayList<String>();
-		// for (Entity result : lRes) {
-		// Map<String, Object> l = result.getProperties();
-		// JSONArray res = new JSONArray();
-		//
-		// for (Map.Entry<String, Object> entry : l.entrySet()) {
-		// String k=entry.getKey();
-		// if (!h.contains(k)) h.add(k);
-		// Object v=entry.getValue();
-		// if (k.startsWith("s_")) res.put((String)v);
-		// if (k.startsWith("i_")) res.put((Long)v);
-		// if (k.startsWith("b_")) res.put((Boolean)v);
-		// if (k.startsWith("d_")) res.put((Date)v);
-		// }
-		// results.put(res);
-		// }
-		// data.put("results", results);
-		//
-		// for (String he:h)
-		// headers.put(new JSONObject().put("title",he.substring(2)));
-		// data.put("headers", headers);
-		// resp.getWriter().print(data);
+		resp.setContentType("application/json");
+		Query q = new Query("Project");
+		List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+		log.warning("results: " + lRes.size());
+		JSONObject data = new JSONObject();
+		JSONArray results = new JSONArray();
+		for (Entity result : lRes) {
+			results.put(result.getProperty("name"));
+		}
+		data.put("projects", results);
+		resp.getWriter().print(data);
 
 	}
 }

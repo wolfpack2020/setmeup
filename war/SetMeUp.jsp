@@ -26,10 +26,17 @@
 
 
 	<script>
-	
+		function preload(){
+			$.getJSON("creator", {} , function(data) {
+				d=data.projects;
+				for (i in d)  $("#s_session").append( '<option value="'+d[i]+'">' + d[i] + '</option>');
+				
+			});
+		}
+		
 		function showCurrentSession() {
 			var GD;
-			$.getJSON("repeater", {}, function(data) {
+			$.getJSON("repeater", {project:$("#s_session option:selected").val()}, function(data) {
 				GD = data;
 			});
 			if (GD.headers.length==0) return;
@@ -57,10 +64,14 @@
 		}
 
 		$(document).ready(function() {
+
+			preload();
 			
 			$.ajaxSetup({
 				async : false
 			});
+			
+			$('#s_session').change(showCurrentSession);
 			
 			$("#loading").show();
 			showCurrentSession();
@@ -111,18 +122,13 @@
 				$( this ).append( '<option value="d">Date</option>');
 				});
 			 
-			$("#b_Refresh").button().click(function() {
-				$.post("repeater", {
-					"reset" : ""
-				}, function(data) {
-				});
-			});			
+			$("#b_Refresh").button().click(function(){showCurrentSession});			
 			
 			$("#b_Create").button().click(function() {
 				project = {};
 				project.title=$("#tb_title").val();
-				project.from=$("dp_from").val();
-				project.to=$("dp_to").val();
+				project.from=new Date( $("#dp_from").datepicker( "getDate" ) ).getTime();//$("#dp_from").datepicker( "getDate" );
+				project.to=new Date( $("#dp_to").datepicker( "getDate" ) ).getTime();//$("#dp_to").datepicker( "getDate" );
  				project.cols = [];
 				$(".tb_cn").each(function(index) { 
 						col={};
@@ -159,13 +165,14 @@
 			</ul>
 			<div id="tabs-1">
 				<br>
+				Select session: <select id="s_session"></select> <button id="b_Refresh">Refresh</button>
+				<br>
 				<table cellpadding="0" cellspacing="0" border="0" class="display"
 					id="resTableSpace" width="100%">
 					<thead></thead>
 					<tbody></tbody>
 				</table>
-				<br>
-				<button id="b_Refresh">Refresh</button>
+				
 			</div>
 
 			<div id="tabs-2">
