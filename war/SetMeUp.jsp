@@ -47,16 +47,14 @@
 			});
 		}
 
-		function createSession() {
-
-		}
-
 		function showArchive(){
 			
 		}
 		
 		function showCurlExample(){
-			alert('curl -d result="{s_tutorial:\"triumf-sep2014\",s_domain:\"triumf.ca\",s_nickname:\"desilva\",s_identity:\"/C=CA/O=Grid/OU=westgrid.ca/CN=Asoka De Silva mwt-125\",b_os:True,b_grid:True,b_env:False,b_inputFiles:False,b_panda:True,b_fax:True,b_asg:False}" "http://setmeup-atlas.appspot.com/repeater"');
+			String example='curl -d result="{project:';
+			example+='\"' + $("#tb_title").val() + '\"';
+			alert(example+',s_domain:\"triumf.ca\",s_nickname:\"desilva\",s_identity:\"/C=CA/O=Grid/OU=westgrid.ca/CN=Asoka De Silva mwt-125\",b_os:True,b_grid:True,b_env:False,b_inputFiles:False,b_panda:True,b_fax:True,b_asg:False}" "http://setmeup-atlas.appspot.com/repeater"');
 		}
 		
 		window.onload = function() {
@@ -127,8 +125,8 @@
 			$("#b_Create").button().click(function() {
 				project = {};
 				project.title=$("#tb_title").val();
-				project.from=new Date( $("#dp_from").datepicker( "getDate" ) ).getTime();//$("#dp_from").datepicker( "getDate" );
-				project.to=new Date( $("#dp_to").datepicker( "getDate" ) ).getTime();//$("#dp_to").datepicker( "getDate" );
+				project.from=new Date( $("#dp_from").datepicker( "getDate" ) ).getTime();
+				project.to=new Date( $("#dp_to").datepicker( "getDate" ) ).getTime();
  				project.cols = [];
 				$(".tb_cn").each(function(index) { 
 						col={};
@@ -136,7 +134,8 @@
 						col.key=$(".cb_key:eq("+index.toString()+")").is(':checked');
 						col.type=$(".s_type:eq("+index.toString()+")").val();
 						col.index= $(".spinner:eq("+index.toString()+")").spinner("value");
-						project.cols.push(col);
+						if(col.name!="ColumnName" && col.name!="")
+							project.cols.push(col);
 					}); 
 				$.post("creator", JSON.stringify(project), function(data) {}, "json");
 			});

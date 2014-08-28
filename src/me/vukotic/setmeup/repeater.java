@@ -65,14 +65,19 @@ public class repeater extends HttpServlet {
 
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
-				if (key.startsWith("s_"))
-					result.setProperty(key, json_result.getString(key));
-				if (key.startsWith("b_"))
-					result.setProperty(key, json_result.getBoolean(key));
-				if (key.startsWith("i_"))
-					result.setProperty(key, json_result.getInt(key));
-				if (key.startsWith("d_"))
-					result.setProperty(key,new Date(json_result.getLong(key)) );
+				Boolean found=false;
+				for (Entity c :lRes){
+					if (key.equals(c.getProperty("name"))){
+						String pt=(String) c.getProperty("type");
+						if (pt.equals("s")) result.setProperty(key, json_result.getString(key));
+						if (pt.equals("b")) result.setProperty(key, json_result.getBoolean(key));
+						if (pt.equals("i")) result.setProperty(key, json_result.getInt(key));
+						if (pt.equals("f")) result.setProperty(key, json_result.getDouble(key));
+						if (pt.equals("d")) result.setProperty(key, new Date(json_result.getLong(key)) );
+						found=true;
+					}
+				}
+				if (!found) log.warning("could not find a column named: "+key);
 			}
 
 			datastore.put(result);
