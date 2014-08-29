@@ -26,123 +26,179 @@
 
 
 	<script>
-		function preload(){
-			$.getJSON("creator", {} , function(data) {
-				d=data.projects;
-				for (i in d)  $("#s_session").append( '<option value="'+d[i]+'">' + d[i] + '</option>');
-				
-			});
-		}
+		var resTable;
 		
-		function showCurrentSession() {
-			var GD;
-			$.getJSON("repeater", {project:$("#s_session option:selected").val()}, function(data) {
-				GD = data;
-			});
-			if (GD.headers.length==0) return;
-			$('#resTableSpace').dataTable({
-				"bJQueryUI" : true,
-				"data" : GD.results,
-				"columns" : GD.headers
+		function preload() {
+			$.getJSON("creator", {}, function(data) {
+				d = data.projects;
+				for (i in d)
+					$("#s_session").append(
+							'<option value="'+d[i]+'">' + d[i] + '</option>');
+
 			});
 		}
 
-		function showArchive(){
-			
+		function showCurrentSession() {
+			var GD;
+			$.getJSON("repeater", {
+				project : $("#s_session option:selected").val()
+			}, function(data) {
+				GD = data;
+			});
+			if (GD.headers.length == 0) return;
+			if (resTable != null) {
+		        resTable.fnDestroy();
+				$("#resTableSpace").empty();
+			}
+ 			resTable=$('#resTableSpace').dataTable({
+				"bDestroy" : true,
+				"bJQueryUI" : true,
+				"data" : GD.results,
+				"columns" : GD.headers
+			}); 
 		}
-		
-		function showCurlExample(){
-			example='curl -d result="{project:';
-			example+='\"' + $("#tb_title").val() + '\"';
-			alert(example+',s_domain:\"triumf.ca\",s_nickname:\"desilva\",s_identity:\"/C=CA/O=Grid/OU=westgrid.ca/CN=Asoka De Silva mwt-125\",b_os:True,b_grid:True,b_env:False,b_inputFiles:False,b_panda:True,b_fax:True,b_asg:False}" "http://setmeup-atlas.appspot.com/repeater"');
+
+		function showArchive() {
+
 		}
-		
+
+		function showCurlExample() {
+			example = 'curl -d result="{project:';
+			example += '\\"' + $("#tb_title").val() + '\\",';
+			cols = [];
+			$(".tb_cn").each(function(index) {
+				if ($(this).val() != "ColumnName" && $(this).val() != "") {
+					typ = $(".s_type:eq(" + index.toString() + ")").val();
+					co = '\\"'+$(this).val() + '\\":';
+					if (typ == 's')
+						co += '\\"SomeString\\"';
+					if (typ == 'i')
+						co += '999';
+					if (typ == 'f')
+						co += '123.456';
+					if (typ == 'b')
+						co += 'True';
+					if (typ == 'd')
+						co += 'Date';
+					cols.push(co);
+				}
+			});
+			example += cols.join();
+			alert(example + '}" "http://setmeup-atlas.appspot.com/repeater"');
+		}
+
 		window.onload = function() {
 			//	alert("welcome");
 		}
 
-		$(document).ready(function() {
+		$(document).ready(
+				function() {
 
-			preload();
-			
-			$.ajaxSetup({
-				async : false
-			});
-			
-			$('#s_session').change(showCurrentSession);
-			
-			$("#loading").show();
-			showCurrentSession();
-			$("#loading").hide();
-			
-			$("#tabs").tabs({
-				activate : function(event, ui) {
-					if (ui.newPanel.index() == 1) { // loading current sessions
-						console.log("loading tab 1.");
-						$("#loading").show();
+					$.ajaxSetup({
+						async : false
+					});
+					
+					preload();
+		 			
+					$("#loading").show();
 						showCurrentSession();
-						$("#loading").hide();
-					} else {
-						//epTable.fnClearTable();
-					}
+					$("#loading").hide();
 
-					if (ui.newPanel.index() == 2) { // create new session
-						console.log("loading tab 2.");
-					} else {
-						//resTableSpace.fnClearTable();
-					}
 
-					if (ui.newPanel.index() == 3) { // Archive
-						console.log("loading tab 3.");
-						$("#loading").show();
-						showArchive();
-						$("#loading").hide();
-					} else {
 
-					}
-				}
-			});
+					
+					$("#tabs").tabs({
+						activate : function(event, ui) {
+							if (ui.newPanel.index() == 1) { // loading current sessions
+								console.log("loading tab 1.");
+								$("#loading").show();
+								showCurrentSession();
+								$("#loading").hide();
+							} else {
+								
+							}
 
-			
-			$( "#dp_from" ).datepicker();
-			$( "#dp_to" ).datepicker();
-			$( ".spinner" ).each(function( index ) {
-				$(this).spinner({ min: 1, max: 7, width: 60 }).val(index+1);
+							if (ui.newPanel.index() == 2) { // create new session
+								console.log("loading tab 2.");
+							} else {
+							}
+
+							if (ui.newPanel.index() == 3) { // Archive
+								console.log("loading tab 3.");
+								$("#loading").show();
+								showArchive();
+								$("#loading").hide();
+							} else {
+
+							}
+						}
+					});
+
+					$("#dp_from").datepicker();
+					$("#dp_to").datepicker();
+					$(".spinner").each(function(index) {
+						$(this).spinner({
+							min : 1,
+							max : 7,
+							width : 60
+						}).val(index + 1);
+					});
+					$(".s_type").each(function(index) {
+						$(this).append('<option value="s">String</option>');
+						$(this).append('<option value="i">Integer</option>');
+						$(this).append('<option value="f">Float</option>');
+						$(this).append('<option value="b">Boolean</option>');
+						$(this).append('<option value="d">Date</option>');
+					});
+
+					$("#b_Refresh").button().click(function() {	
+							showCurrentSession(); 
+						});
+					
+					$('#s_session').change(function(){
+						showCurrentSession();
+						});
+					
+					
+					$("#b_Create").button().click(
+							function() {
+								project = {};
+								project.title = $("#tb_title").val();
+								project.from = new Date($("#dp_from")
+										.datepicker("getDate")).getTime();
+								project.to = new Date($("#dp_to").datepicker(
+										"getDate")).getTime();
+								project.cols = [];
+								$(".tb_cn").each(
+										function(index) {
+											col = {};
+											col.name = $(this).val();
+											col.key = $(
+													".cb_key:eq("
+															+ index.toString()
+															+ ")").is(
+													':checked');
+											col.type = $(
+													".s_type:eq("
+															+ index.toString()
+															+ ")").val();
+											col.index = $(
+													".spinner:eq("
+															+ index.toString()
+															+ ")").spinner(
+													"value");
+											if (col.name != "ColumnName"
+													&& col.name != "")
+												project.cols.push(col);
+										});
+								$.post("creator", JSON.stringify(project),
+										function(data) {
+										}, "json");
+							});
+
+					
+
 				});
-			$( ".s_type" ).each(function( index ) {
-				$( this ).append( '<option value="s">String</option>');
-				$( this ).append( '<option value="i">Integer</option>');
-				$( this ).append( '<option value="f">Float</option>');
-				$( this ).append( '<option value="b">Boolean</option>');
-				$( this ).append( '<option value="d">Date</option>');
-				});
-			 
-			$("#b_Refresh").button().click(function(){showCurrentSession});			
-			
-			$("#b_Create").button().click(function() {
-				project = {};
-				project.title=$("#tb_title").val();
-				project.from=new Date( $("#dp_from").datepicker( "getDate" ) ).getTime();
-				project.to=new Date( $("#dp_to").datepicker( "getDate" ) ).getTime();
- 				project.cols = [];
-				$(".tb_cn").each(function(index) { 
-						col={};
-						col.name=$(this).val();
-						col.key=$(".cb_key:eq("+index.toString()+")").is(':checked');
-						col.type=$(".s_type:eq("+index.toString()+")").val();
-						col.index= $(".spinner:eq("+index.toString()+")").spinner("value");
-						if(col.name!="ColumnName" && col.name!="")
-							project.cols.push(col);
-					}); 
-				$.post("creator", JSON.stringify(project), function(data) {}, "json");
-			});
-
-			$("#b_ShowCURLexample").button().click(function() {
-				showCurlExample();
-			});
-
-
-		});
 	</script>
 	<div class="maincolumn">
 
@@ -160,76 +216,97 @@
 				<li><a href="#tabs-3">Archived</a></li>
 			</ul>
 			<div id="tabs-1">
-				<br>
-				Select session: <select id="s_session"></select> <button id="b_Refresh">Refresh</button>
+				<br> Select session: <select id="s_session"></select>
+				<button id="b_Refresh">Refresh</button>
 				<br>
 				<table cellpadding="0" cellspacing="0" border="0" class="display"
 					id="resTableSpace" width="100%">
 					<thead></thead>
 					<tbody></tbody>
 				</table>
-				
+
 			</div>
 
 			<div id="tabs-2">
 				<br>
-				<table cellpadding="3" cellspacing="0" border="0" class="display" id="ct" width="100%">
+				<table cellpadding="3" cellspacing="0" border="0" class="display"
+					id="ct" width="100%">
 					<tbody>
-					<tr><th>Title:</th> <td><input id="tb_title" type="text" value="Session Title"></input> </td> </tr><br>
-					<tr><th>From:</th> <td><input id="dp_from" type="text" ></input> </td> <th>To:</th> <td><input id="dp_to" type="text" ></input> </td> </tr><br>
-					<tr><th>Add columns</th> </tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check1"></th>  -->
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check2"></th>  -->
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check3"></th> --> 
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check4"></th>  -->
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check5"></th>  -->
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check6"></th>  -->
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
-					<tr>
-						<!-- <th><input type="checkbox" id="check7"></th>  -->
-						<td><input class="tb_cn" type="text" value="ColumnName"></input> </td>
-						<td>key:<input type="checkbox" class="cb_key"></td> 
-						<td>type:<select class="s_type"></select></td>
-						<td>position:<input class="spinner" name="value"></td> 
-					</tr>
+						<tr>
+							<th>Title:</th>
+							<td><input id="tb_title" type="text" value="Session Title"></input>
+							</td>
+						</tr>
+						<br>
+						<tr>
+							<th>From:</th>
+							<td><input id="dp_from" type="text"></input></td>
+							<th>To:</th>
+							<td><input id="dp_to" type="text"></input></td>
+						</tr>
+						<br>
+						<tr>
+							<th>Add columns</th>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check1"></th>  -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check2"></th>  -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check3"></th> -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check4"></th>  -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check5"></th>  -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check6"></th>  -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
+						<tr>
+							<!-- <th><input type="checkbox" id="check7"></th>  -->
+							<td><input class="tb_cn" type="text" value="ColumnName"></input>
+							</td>
+							<td>key:<input type="checkbox" class="cb_key"></td>
+							<td>type:<select class="s_type"></select></td>
+							<td>position:<input class="spinner" name="value"></td>
+						</tr>
 					</tbody>
 				</table>
-				
+
 				<br>
 				<button id="b_Create">Create</button>
 				<button id="b_ShowCURLexample">Show curl example</button>
