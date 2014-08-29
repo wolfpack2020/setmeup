@@ -58,37 +58,41 @@ public class repeater extends HttpServlet {
 				return;
 			Query q = new Query("Column").setAncestor(pr.getKey());
 
-			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+			List<Entity> lCol = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
 
 			Date currTime = new Date();
 			Entity result = new Entity("Data", pr.getKey());
 			result.setProperty("d_timestamp", currTime);
 
-			Iterator<?> keys = json_result.keys();
+			// here loop over keys and find the KEY ones
+			// search all rows of the project to see if any existing record matches all KEY terms
+			// if yes get it's key and reuse it.
+			
+			Iterator<?> jCols = json_result.keys();
 
-			while (keys.hasNext()) {
-				String key = (String) keys.next();
-				if (key.equals("project"))
+			while (jCols.hasNext()) {
+				String jCol = (String) jCols.next();
+				if (jCol.equals("project"))
 					continue;
 				Boolean found = false;
-				for (Entity c : lRes) {
-					if (key.equals(c.getProperty("name"))) {
+				for (Entity c : lCol) {
+					if (jCol.equals(c.getProperty("name"))) {
 						String pt = (String) c.getProperty("type");
 						if (pt.equals("s"))
-							result.setProperty(key, json_result.getString(key));
+							result.setProperty(jCol, json_result.getString(jCol));
 						if (pt.equals("b"))
-							result.setProperty(key, json_result.getBoolean(key));
+							result.setProperty(jCol, json_result.getBoolean(jCol));
 						if (pt.equals("i"))
-							result.setProperty(key, json_result.getInt(key));
+							result.setProperty(jCol, json_result.getInt(jCol));
 						if (pt.equals("f"))
-							result.setProperty(key, json_result.getDouble(key));
+							result.setProperty(jCol, json_result.getDouble(jCol));
 						if (pt.equals("d"))
-							result.setProperty(key, new Date(json_result.getLong(key)));
+							result.setProperty(jCol, new Date(json_result.getLong(jCol)));
 						found = true;
 					}
 				}
 				if (!found)
-					log.warning("could not find a column named: " + key);
+					log.warning("could not find a column named: " + jCol);
 			}
 
 			datastore.put(result);
