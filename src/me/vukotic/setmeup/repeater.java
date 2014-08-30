@@ -32,6 +32,8 @@ public class repeater extends HttpServlet {
 
 	private static DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
+	private ProjectCache pc=new ProjectCache();
+	
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		log.warning("repeater got POSTed ...");
 
@@ -45,28 +47,22 @@ public class repeater extends HttpServlet {
 		// return;
 		// }
 
+		
+		
 		if (req.getParameter("result") != null) {
 			log.warning("receiving the data ...");
 			JSONObject json_result = new JSONObject(req.getParameter("result"));
 
-			// looking up columns of that project
+			// looking up  that project
 			String proj = json_result.getString("project");
-			Filter pn = new FilterPredicate("name", FilterOperator.EQUAL, proj);
-			Query qp = new Query("Project").setKeysOnly().setFilter(pn);
-			Entity pr = datastore.prepare(qp).asSingleEntity();
-			if (pr == null)
+			Project p=pc.getProject(proj);
+			if (p==null) {
+				resp.getWriter().print("No session of that name found.");
 				return;
-			Query q = new Query("Column").setAncestor(pr.getKey());
-
-			List<Entity> lCol = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-
-			Date currTime = new Date();
-			Entity result = new Entity("Data", pr.getKey());
-			result.setProperty("d_timestamp", currTime);
-
-			// here loop over keys and find the KEY ones
-			// search all rows of the project to see if any existing record matches all KEY terms
-			// if yes get it's key and reuse it.
+			}
+					
+			Entity result = new Entity("Data", p.dsKey);
+			result.setProperty("timestamp", new Date());
 			
 			Iterator<?> jCols = json_result.keys();
 
@@ -75,18 +71,19 @@ public class repeater extends HttpServlet {
 				if (jCol.equals("project"))
 					continue;
 				Boolean found = false;
-				for (Entity c : lCol) {
-					if (jCol.equals(c.getProperty("name"))) {
-						String pt = (String) c.getProperty("type");
-						if (pt.equals("s"))
+				for (Map.Entry<String, Column> entry : p.columns.entrySet()) {
+					String colName = entry.getKey();
+				    Column col = entry.getValue();
+					if (jCol.equals(colName)) {
+						if (col.type.equals("s"))
 							result.setProperty(jCol, json_result.getString(jCol));
-						if (pt.equals("b"))
+						if (col.type.equals("b"))
 							result.setProperty(jCol, json_result.getBoolean(jCol));
-						if (pt.equals("i"))
+						if (col.type.equals("i"))
 							result.setProperty(jCol, json_result.getInt(jCol));
-						if (pt.equals("f"))
+						if (col.type.equals("f"))
 							result.setProperty(jCol, json_result.getDouble(jCol));
-						if (pt.equals("d"))
+						if (col.type.equals("d"))
 							result.setProperty(jCol, new Date(json_result.getLong(jCol)));
 						found = true;
 					}
@@ -95,7 +92,12 @@ public class repeater extends HttpServlet {
 					log.warning("could not find a column named: " + jCol);
 			}
 
-			datastore.put(result);
+			Entity toStore=p.getEntity(result);
+			if (toStore==null){
+				resp.getWriter().print("At least one of the key columns is missing. Not storing the result.");
+				return;
+			}
+			datastore.put(toStore);
 		}
 
 	}

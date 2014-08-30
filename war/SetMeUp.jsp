@@ -37,7 +37,22 @@
 
 			});
 		}
+		
+		function addColumn(){
+			$('#ct tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" name="value"></td></tr>');
+			
+			$(".spinner:last").spinner({ min : 1, width : 60 });
 
+			$(".s_type:last").each(function(index) {
+				$(this).append('<option value="s">String</option>');
+				$(this).append('<option value="i">Integer</option>');
+				$(this).append('<option value="f">Float</option>');
+				$(this).append('<option value="b">Boolean</option>');
+				$(this).append('<option value="d">Date</option>');
+			});
+		
+		}
+		
 		function showCurrentSession() {
 			var GD;
 			$.getJSON("repeater", {
@@ -135,32 +150,27 @@
 						}
 					});
 
-					$("#dp_from").datepicker();
-					$("#dp_to").datepicker();
-					$(".spinner").each(function(index) {
-						$(this).spinner({
-							min : 1,
-							max : 7,
-							width : 60
-						}).val(index + 1);
-					});
-					$(".s_type").each(function(index) {
-						$(this).append('<option value="s">String</option>');
-						$(this).append('<option value="i">Integer</option>');
-						$(this).append('<option value="f">Float</option>');
-						$(this).append('<option value="b">Boolean</option>');
-						$(this).append('<option value="d">Date</option>');
-					});
+					$("#dp_from").datepicker('setDate', new Date());
+					$("#dp_to").datepicker('setDate', new Date());
+
 
 					$("#b_Refresh").button().click(function() {	
 							showCurrentSession(); 
 						});
-					
+					$("#b_ShowCURLexample").button().click(function() {	
+						showCurlExample(); 
+					});
 					$('#s_session').change(function(){
 						showCurrentSession();
-						});
+					});
 					
-					
+					$("#b_AddColumn").button().click(function() {	
+						addColumn();
+					});
+
+					addColumn();
+					addColumn();
+
 					$("#b_Create").button().click(
 							function() {
 								project = {};
@@ -247,68 +257,12 @@
 						</tr>
 						<br>
 						<tr>
-							<th>Add columns</th>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check1"></th>  -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check2"></th>  -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check3"></th> -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check4"></th>  -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check5"></th>  -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check6"></th>  -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
-						</tr>
-						<tr>
-							<!-- <th><input type="checkbox" id="check7"></th>  -->
-							<td><input class="tb_cn" type="text" value="ColumnName"></input>
-							</td>
-							<td>key:<input type="checkbox" class="cb_key"></td>
-							<td>type:<select class="s_type"></select></td>
-							<td>position:<input class="spinner" name="value"></td>
+							<th>Columns</th>
 						</tr>
 					</tbody>
 				</table>
-
 				<br>
+				<button id="b_AddColumn">Add column</button>
 				<button id="b_Create">Create</button>
 				<button id="b_ShowCURLexample">Show curl example</button>
 			</div>
