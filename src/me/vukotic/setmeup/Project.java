@@ -66,7 +66,7 @@ public class Project {
 		// if not return the parameter entity
 		// if yes copy the values from the parameter entity to the found one and return that one.
 
-		Query q = new Query("Data").setAncestor(dsKey);
+		Query q = new Query("Data_"+name).setAncestor(dsKey);
 		List<Entity> lRows = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
 
 		log.warning("lRows size before:"+lRows.size());

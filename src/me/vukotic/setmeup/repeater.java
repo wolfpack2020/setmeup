@@ -19,7 +19,6 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
@@ -61,7 +60,7 @@ public class repeater extends HttpServlet {
 				return;
 			}
 					
-			Entity result = new Entity("Data", p.dsKey);
+			Entity result = new Entity("Data_"+p.name, p.dsKey);
 			result.setProperty("timestamp", new Date());
 			
 			Iterator<?> jCols = json_result.keys();
@@ -124,7 +123,7 @@ public class repeater extends HttpServlet {
 			Query cq = new Query("Column").setAncestor(pr.getKey());
 			List<Entity> lColumns = datastore.prepare(cq).asList(FetchOptions.Builder.withDefaults());
 
-			Query q = new Query("Data").setAncestor(pr.getKey());
+			Query q = new Query("Data_"+proj).setAncestor(pr.getKey());
 			List<Entity> lData = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
 			log.warning("results: " + lData.size());
 

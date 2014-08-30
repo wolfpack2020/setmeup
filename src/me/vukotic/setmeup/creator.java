@@ -2,13 +2,8 @@ package me.vukotic.setmeup;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
@@ -22,16 +17,31 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 
 @SuppressWarnings("serial")
 public class creator extends HttpServlet {
 
 	private static final Logger log = Logger.getLogger(creator.class.getName());
-
 	private static DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
+	
+	public Boolean projectExist(String name){
+		log.warning("checking if project "+name+" already exists.");
+		Filter pn = new FilterPredicate("name", FilterOperator.EQUAL, name);
+		Query qp = new Query("Project").setFilter(pn);
+		Entity pr = datastore.prepare(qp).asSingleEntity();	
+		if (pr==null) {
+			log.warning("it does not.");
+			return false;
+		} else {
+			log.warning("it does.");
+			return true;
+		}
+	}
+	
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		log.warning("creator got POSTed ...");
 
@@ -52,7 +62,12 @@ public class creator extends HttpServlet {
 			log.severe(e.getMessage());
 			return;
 		}
-
+		
+		if (projectExist(p.getString("title"))==true) {
+			resp.getWriter().print("was not created, as it already exists.");
+			return;
+		}
+		
 		Entity project = new Entity("Project");
 		Date currTime = new Date();
 		project.setProperty("timestamp", currTime);
@@ -75,6 +90,7 @@ public class creator extends HttpServlet {
 			datastore.put(column);
 		}
 
+		resp.getWriter().print("successfully created.");
 		// if (req.getParameter("reset") != null) {
 		// log.warning("cleaning the data ...");
 		// Query q = new Query("Data").setKeysOnly();

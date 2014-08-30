@@ -39,9 +39,9 @@
 		}
 		
 		function addColumn(){
-			$('#ct tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" name="value"></td></tr>');
+			$('#ct tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" value="1"></td></tr>');
 			
-			$(".spinner:last").spinner({ min : 1, width : 60 });
+			$(".spinner:last").spinner({ min : 1, width : 60, value: 1 });
 
 			$(".s_type:last").each(function(index) {
 				$(this).append('<option value="s">String</option>');
@@ -150,8 +150,8 @@
 						}
 					});
 
-					$("#dp_from").datepicker('setDate', new Date());
-					$("#dp_to").datepicker('setDate', new Date());
+					$("#dp_from").datepicker().datepicker('setDate', new Date());
+					$("#dp_to").datepicker().datepicker('setDate', new Date());
 
 
 					$("#b_Refresh").button().click(function() {	
@@ -175,36 +175,21 @@
 							function() {
 								project = {};
 								project.title = $("#tb_title").val();
-								project.from = new Date($("#dp_from")
-										.datepicker("getDate")).getTime();
-								project.to = new Date($("#dp_to").datepicker(
-										"getDate")).getTime();
+								project.from = new Date($("#dp_from").datepicker("getDate")).getTime();
+								project.to = new Date($("#dp_to").datepicker("getDate")).getTime();
 								project.cols = [];
-								$(".tb_cn").each(
-										function(index) {
+								$(".tb_cn").each( function(index) {
 											col = {};
 											col.name = $(this).val();
-											col.key = $(
-													".cb_key:eq("
-															+ index.toString()
-															+ ")").is(
-													':checked');
-											col.type = $(
-													".s_type:eq("
-															+ index.toString()
-															+ ")").val();
-											col.index = $(
-													".spinner:eq("
-															+ index.toString()
-															+ ")").spinner(
-													"value");
-											if (col.name != "ColumnName"
-													&& col.name != "")
-												project.cols.push(col);
+											col.key =  $(".cb_key:eq(" + index.toString() + ")").is(':checked');
+											col.type = $(".s_type:eq(" + index.toString() + ")").val();
+											col.index= $( ".spinner:eq(" + index.toString() + ")").spinner("value");
+											if (col.name != "ColumnName" && col.name != "")	project.cols.push(col);
 										});
-								$.post("creator", JSON.stringify(project),
-										function(data) {
-										}, "json");
+								$.post("creator", 
+										JSON.stringify(project),
+										function(msg) {  alert("project "+ $("#tb_title").val()+" "+msg);  },
+										"json");
 							});
 
 					
