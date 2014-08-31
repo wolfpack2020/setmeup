@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -25,8 +28,8 @@ public class Project {
 	Date startDate;
 	Date endDate;
 	Date created;
-	
 	HashMap<String, Column> columns=new HashMap<String, Column>();
+	
 	private static DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 	
 	Project(String n){
@@ -60,7 +63,20 @@ public class Project {
 		}
 		log.warning("loaded "+ columns.size() +" columns."); 
 	}
-
+    
+	JSONObject getJSON(){
+		JSONObject data = new JSONObject();
+		data.put("name", name);
+		data.put("from", startDate);
+		data.put("to", endDate);
+		JSONArray cols = new JSONArray();
+		for (Column c: columns.values()){
+			cols.put(c.getJSON());
+		}
+		data.put("columns", cols);
+		return data;
+    }
+    
 	public Entity getEntity(Entity result) {
 		// check if there is an entity with the same values in key columns
 		// if not return the parameter entity

@@ -91,68 +91,35 @@ public class creator extends HttpServlet {
 		}
 
 		resp.getWriter().print("successfully created.");
-		// if (req.getParameter("reset") != null) {
-		// log.warning("cleaning the data ...");
-		// Query q = new Query("Data").setKeysOnly();
-		// List<Entity> lRes =
-		// datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-		// for (Entity e:lRes)
-		// datastore.delete(e.getKey());
-		// return;
-		// }
-		//
-		// if (req.getParameter("result") != null) {
-		// log.warning("receiving the data ...");
-		// JSONObject json_result = new JSONObject(req.getParameter("result"));
-		// // JSONArray json_keycolumns = new
-		// JSONArray(req.getParameter("keys"));
-		// //loop over json_keycolumns array
-		// // compare to keys of json_result to make sure these exist in
-		// json_result object - sanity check
-		// // loop over json_result.keys and if column is also in
-		// json_keycolumns change the value to string and concatecate it up.
-		//
-		// Date currTime = new Date();
-		// // if nothing in json_keycolumns do this:
-		// Entity result = new Entity("Data");
-		// //else
-		// // Entity result = new Entity("Data", concatenated thing);
-		//
-		// result.setProperty("d_timestamp", currTime);
-		// Iterator<?> keys = json_result.keys();
-		//
-		// while (keys.hasNext()) {
-		// String key = (String) keys.next();
-		// if (key.startsWith("s_"))
-		// result.setProperty(key, json_result.getString(key));
-		// if (key.startsWith("b_"))
-		// result.setProperty(key, json_result.getBoolean(key));
-		// if (key.startsWith("i_"))
-		// result.setProperty(key, json_result.getInt(key));
-		// if (key.startsWith("d_"))
-		// result.setProperty(key,new Date(json_result.getLong(key)) );
-		// }
-		//
-		// datastore.put(result);
-		// }
 
 	}
-
+	
+	// returns all the results for a given project name
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-		log.warning("creator get a GET ...");
-
+		log.warning("creator got a GET ...");
 		resp.setContentType("application/json");
-		Query q = new Query("Project");
-		List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
-		log.warning("results: " + lRes.size());
-		JSONObject data = new JSONObject();
-		JSONArray results = new JSONArray();
-		for (Entity result : lRes) {
-			results.put(result.getProperty("name"));
+		
+		if (req.getParameter("what").equals("project_names")){
+			Query q = new Query("Project");
+			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+			log.warning("returns project names: " + lRes.size());
+			JSONObject data = new JSONObject();
+			JSONArray results = new JSONArray();
+			for (Entity result : lRes) {
+				results.put(result.getProperty("name"));
+			}
+			data.put("projects", results);
+			resp.getWriter().print(data);
+			return;
 		}
-		data.put("projects", results);
-		resp.getWriter().print(data);
-
+		
+		if (req.getParameter("what").equals("project_details")){
+			log.warning("returns project details: " + req.getParameter("project"));
+			Project p=ProjectCache.getProject(req.getParameter("project"));
+			resp.getWriter().print(p.getJSON());
+			return;
+		}
+		
 	}
 }

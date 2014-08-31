@@ -31,7 +31,6 @@ public class repeater extends HttpServlet {
 
 	private static DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-	private ProjectCache pc=new ProjectCache();
 	
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		log.warning("repeater got POSTed ...");
@@ -54,7 +53,7 @@ public class repeater extends HttpServlet {
 
 			// looking up  that project
 			String proj = json_result.getString("project");
-			Project p=pc.getProject(proj);
+			Project p=ProjectCache.getProject(proj);
 			if (p==null) {
 				resp.getWriter().print("No session of that name found.");
 				return;

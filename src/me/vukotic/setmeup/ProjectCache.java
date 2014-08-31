@@ -14,10 +14,10 @@ import com.google.appengine.api.datastore.Query.FilterPredicate;
 
 public class ProjectCache {
 
-	HashMap<String, Project> cachedProjects= new HashMap<String,Project>();
+	private static HashMap<String, Project> cachedProjects= new HashMap<String,Project>();
 	private static DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 	
-	Project getProject(String projectName){
+	public static Project getProject(String projectName){
 		// if have it cached
 		if (cachedProjects.containsKey(projectName)){
 			return cachedProjects.get(projectName);

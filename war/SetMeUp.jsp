@@ -29,21 +29,35 @@
 		var resTable;
 		
 		function preload() {
-			$.getJSON("creator", {}, function(data) {
+			$.getJSON("creator", {what:'project_names'}, function(data) {
 				d = data.projects;
-				for (i in d)
-					$("#s_session").append(
-							'<option value="'+d[i]+'">' + d[i] + '</option>');
-
+				for (i in d){
+					$(".s_session").append('<option value="'+d[i]+'">' + d[i] + '</option>');
+				}
 			});
+		}
+
+		function showProject() {
+			$("#et").find("tr:gt(2)").remove();
+			$.getJSON("creator", {what:'project_details', project : $("#s_edit option:selected").val()}, 
+				function(data) {
+					alert(data.from);
+					$("#dp_from_edit").datepicker().datepicker('setDate', data.from);
+					$("#dp_to_edit").datepicker().datepicker('setDate', data.to);
+					cols=data.columns;
+					for (var c=0;c<cols.length; c++){
+						col=cols[c];
+						addPrefilledColumn(col.name,col.key,col.type,col.index);
+					}
+				});
 		}
 		
 		function addColumn(){
 			$('#ct tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" value="1"></td></tr>');
 			
-			$(".spinner:last").spinner({ min : 1, width : 60, value: 1 });
+			$("#ct .spinner:last").spinner({ min : 1, width : 60, value: 1 });
 
-			$(".s_type:last").each(function(index) {
+			$("#ct .s_type:last").each(function(index) {
 				$(this).append('<option value="s">String</option>');
 				$(this).append('<option value="i">Integer</option>');
 				$(this).append('<option value="f">Float</option>');
@@ -53,10 +67,31 @@
 		
 		}
 		
+		function addPrefilledColumn(name, key, type, position ){
+			cn='<td><input class="tb_cn" type="text" value="'+name+'"></input></td>';
+			if (key==true) 
+				ke='<td>key:<input type="checkbox" checked class="cb_key"></td>';
+			else
+				ke='<td>key:<input type="checkbox" class="cb_key"></td>';
+			$('#et tr:last').after('<tr>'+cn+ke+'<td>type:<select class="s_type"></select></td><td>position:<input class="spinner" value="'+position+'"></td></tr>');
+			
+			$("#et .spinner:last").spinner({ min : 1, width : 60 });
+			
+			$("#et .s_type:last").each(function(index) {
+				$(this).append('<option value="s">String</option>');
+				$(this).append('<option value="i">Integer</option>');
+				$(this).append('<option value="f">Float</option>');
+				$(this).append('<option value="b">Boolean</option>');
+				$(this).append('<option value="d">Date</option>');
+				$(this).val(type);
+			});
+		
+		}
+		
 		function showCurrentSession() {
 			var GD;
 			$.getJSON("repeater", {
-				project : $("#s_session option:selected").val()
+				project : $("#s_show option:selected").val()
 			}, function(data) {
 				GD = data;
 			});
@@ -74,9 +109,6 @@
 			}); 
 		}
 
-		function showArchive() {
-
-		}
 
 		function showCurlExample() {
 			example = 'curl -d result="{project:';
@@ -110,19 +142,6 @@
 		$(document).ready(
 				function() {
 
-					$.ajaxSetup({
-						async : false
-					});
-					
-					preload();
-		 			
-					$("#loading").show();
-						showCurrentSession();
-					$("#loading").hide();
-
-
-
-					
 					$("#tabs").tabs({
 						activate : function(event, ui) {
 							if (ui.newPanel.index() == 1) { // loading current sessions
@@ -130,29 +149,38 @@
 								$("#loading").show();
 								showCurrentSession();
 								$("#loading").hide();
-							} else {
-								
-							}
+							} 
 
 							if (ui.newPanel.index() == 2) { // create new session
 								console.log("loading tab 2.");
-							} else {
-							}
+							} 
 
-							if (ui.newPanel.index() == 3) { // Archive
+							if (ui.newPanel.index() == 3) { // Edit
 								console.log("loading tab 3.");
 								$("#loading").show();
-								showArchive();
+								showProject();
 								$("#loading").hide();
-							} else {
-
-							}
+							} 
 						}
 					});
 
+
+					$.ajaxSetup({
+						async : false
+					});
+
+					$("#loading").show();
+						preload();
+						showCurrentSession();
+					$("#loading").hide();
+
+					
 					$("#dp_from").datepicker().datepicker('setDate', new Date());
 					$("#dp_to").datepicker().datepicker('setDate', new Date());
-
+/* 					$("#dp_from_edit").datepicker();
+					$("#dp_to_edit").datepicker(); */
+					$("#dp_from_clone").datepicker().datepicker('setDate', new Date());
+					$("#dp_to_clone").datepicker().datepicker('setDate', new Date());
 
 					$("#b_Refresh").button().click(function() {	
 							showCurrentSession(); 
@@ -160,10 +188,21 @@
 					$("#b_ShowCURLexample").button().click(function() {	
 						showCurlExample(); 
 					});
-					$('#s_session').change(function(){
+					$('#s_show').change(function(){
 						showCurrentSession();
 					});
-					
+					$('#s_edit').change(function(){
+						showProject();
+					});
+					$('#b_Save').button().click(function(){
+						alert('not implemented yet');
+					});
+					$('#b_Clone').button().click(function(){
+						alert('not implemented yet');
+					});
+					$('#b_Delete').button().click(function(){
+						alert('not implemented yet');
+					});
 					$("#b_AddColumn").button().click(function() {	
 						addColumn();
 					});
@@ -208,25 +247,76 @@
 		<div id="tabs">
 			<ul>
 				<li><a href="#tabs-1">Current Sessions</a></li>
-				<li><a href="#tabs-2">New session</a></li>
-				<li><a href="#tabs-3">Archived</a></li>
+				<li><a href="#tabs-2">New </a></li>
+				<li><a href="#tabs-3">Edit </a></li>
+				<li><a href="#tabs-4">Clone</a></li>
+				<li><a href="#tabs-5">Delete</a></li>
 			</ul>
 			<div id="tabs-1">
-				<br> Select session: <select id="s_session"></select>
+				<br> Select session: <select class="s_session" id="s_show"></select>
 				<button id="b_Refresh">Refresh</button>
 				<br>
 				<table cellpadding="0" cellspacing="0" border="0" class="display"
 					id="resTableSpace" width="100%">
-					<thead></thead>
-					<tbody></tbody>
+					<thead></thead> <tbody></tbody>
 				</table>
 
 			</div>
 
-			<div id="tabs-2">
+			<div id="tabs-2">			
+				<table cellpadding="3" cellspacing="0" border="0" class="display" id="ct" width="80%">
+					<tbody>
+						<tr>
+							<th>Title:</th>
+							<td><input id="tb_title" type="text" value="Session Title"></input> </td>
+						</tr>
+						<br>
+						<tr>
+							<th>From:</th>
+							<td><input id="dp_from" type="text"></input></td>
+						</tr>
+						<tr>
+							<th>To:</th>
+							<td><input id="dp_to" type="text"></input></td>
+						</tr>
+						<br>
+						<tr></tr>
+					</tbody>
+				</table>
 				<br>
+				<button id="b_AddColumn">Add column</button>
+				<hr>
+				<button id="b_Create">Create</button>
+				<button id="b_ShowCURLexample">Show curl example</button>
+			</div>
+
+			<div id="tabs-3">
+				<br> Select session to edit: <select class="s_session" id="s_edit"></select>
+				<br>
+				<table cellpadding="3" cellspacing="0" border="0" class="display" id="et" width="80%">
+					<tbody>
+						<tr>
+							<th>From:</th>
+							<td><input id="dp_from_edit" type="text"></input></td>
+						</tr>
+						<tr>
+							<th>To:</th>
+							<td><input id="dp_to_edit" type="text"></input></td>
+						</tr>
+						<br>
+						<tr></tr>
+					</tbody>
+				</table>
+				<br>
+				<button id="b_EAddColumn">Add column</button>
+				<hr>
+				<button id="b_Save">Save</button>
+				<br>
+			</div>
+			<div id="tabs-4">
+				<br> Select session to clone: <select class="s_session" id="s_clone"></select>
 				<table cellpadding="3" cellspacing="0" border="0" class="display"
-					id="ct" width="100%">
+					id="clonetable" width="50%">
 					<tbody>
 						<tr>
 							<th>Title:</th>
@@ -236,29 +326,23 @@
 						<br>
 						<tr>
 							<th>From:</th>
-							<td><input id="dp_from" type="text"></input></td>
-							<th>To:</th>
-							<td><input id="dp_to" type="text"></input></td>
+							<td><input id="dp_from_clone" type="text"></input></td>
 						</tr>
-						<br>
 						<tr>
-							<th>Columns</th>
+							<th>To:</th>
+							<td><input id="dp_to_clone" type="text"></input></td>
 						</tr>
 					</tbody>
 				</table>
+				<hr>
+				<button id="b_Clone">Clone</button>
 				<br>
-				<button id="b_AddColumn">Add column</button>
-				<button id="b_Create">Create</button>
-				<button id="b_ShowCURLexample">Show curl example</button>
 			</div>
-
-			<div id="tabs-3">
+			<div id="tabs-5">
+				<br> Select session to delete: <select class="s_session" id="s_delete"></select>
+				<hr>
+				<button id="b_Delete">Delete</button>
 				<br>
-				<table cellpadding="0" cellspacing="0" border="0" class="display"
-					id="asdfStatus" width="100%">
-					<thead></thead>
-					<tbody></tbody>
-				</table>
 			</div>
 		</div>
 
