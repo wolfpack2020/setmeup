@@ -53,10 +53,8 @@
 		}
 		
 		function addColumn(){
-			$('#ct tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" value="1"></td></tr>');
-			
+			$('#ct tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" value="1"></td></tr>');		
 			$("#ct .spinner:last").spinner({ min : 1, width : 60, value: 1 });
-
 			$("#ct .s_type:last").each(function(index) {
 				$(this).append('<option value="s">String</option>');
 				$(this).append('<option value="i">Integer</option>');
@@ -64,7 +62,18 @@
 				$(this).append('<option value="b">Boolean</option>');
 				$(this).append('<option value="d">Date</option>');
 			});
+		}
 		
+		function addEditColumn(){
+			$('#et tr:last').after('<tr><td><input class="tb_cn" type="text" value="ColumnName"></input></td><td>key:<input type="checkbox" class="cb_key"></td><td>type:<select class="s_type"></select></td><td>position:<input class="spinner" value="1"></td></tr>');		
+			$("#et .spinner:last").spinner({ min : 1, width : 60, value: 1 });
+			$("#et .s_type:last").each(function(index) {
+				$(this).append('<option value="s">String</option>');
+				$(this).append('<option value="i">Integer</option>');
+				$(this).append('<option value="f">Float</option>');
+				$(this).append('<option value="b">Boolean</option>');
+				$(this).append('<option value="d">Date</option>');
+			});
 		}
 		
 		function addPrefilledColumn(name, key, type, position ){
@@ -114,20 +123,15 @@
 			example = 'curl -d result="{project:';
 			example += '\\"' + $("#tb_title").val() + '\\",';
 			cols = [];
-			$(".tb_cn").each(function(index) {
+			$("#ct .tb_cn").each(function(index) {
 				if ($(this).val() != "ColumnName" && $(this).val() != "") {
 					typ = $(".s_type:eq(" + index.toString() + ")").val();
 					co = '\\"'+$(this).val() + '\\":';
-					if (typ == 's')
-						co += '\\"SomeString\\"';
-					if (typ == 'i')
-						co += '999';
-					if (typ == 'f')
-						co += '123.456';
-					if (typ == 'b')
-						co += 'True';
-					if (typ == 'd')
-						co += 'Date';
+					if (typ == 's') co += '\\"SomeString\\"';
+					if (typ == 'i') co += '999';
+					if (typ == 'f') co += '123.456';
+					if (typ == 'b') co += 'True';
+					if (typ == 'd') co += 'Date';
 					cols.push(co);
 				}
 			});
@@ -165,20 +169,10 @@
 					});
 
 
-					$.ajaxSetup({
-						async : false
-					});
-
-					$("#loading").show();
-						preload();
-						showCurrentSession();
-					$("#loading").hide();
 
 					
 					$("#dp_from").datepicker().datepicker('setDate', new Date());
 					$("#dp_to").datepicker().datepicker('setDate', new Date());
-/* 					$("#dp_from_edit").datepicker();
-					$("#dp_to_edit").datepicker(); */
 					$("#dp_from_clone").datepicker().datepicker('setDate', new Date());
 					$("#dp_to_clone").datepicker().datepicker('setDate', new Date());
 
@@ -200,13 +194,16 @@
 					$('#b_Clone').button().click(function(){
 						alert('not implemented yet');
 					});
-					$('#b_Delete').button().click(function(){
-						alert('not implemented yet');
+					$('#b_Delete').button().on( "click", function() {
+						dialog.dialog( "open" );
 					});
 					$("#b_AddColumn").button().click(function() {	
 						addColumn();
 					});
-
+					$("#b_EAddColumn").button().click(function() {	
+						addEditColumn();
+					});
+					
 					addColumn();
 					addColumn();
 
@@ -231,8 +228,77 @@
 										"json");
 							});
 
+					 var dialog, form,
+					// From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+					name = $( "#username" ),
+					password = $( "#password" ),
+					allFields = $( [] ).add( name ).add( password ),
+					tips = $( ".validateTips" );
+					function updateTips( t ) {
+						tips.text( t ).addClass( "ui-state-highlight" );
+						setTimeout(function() { tips.removeClass( "ui-state-highlight", 1500 );}, 500 );
+					}
+					function checkLength( o, n, min, max ) {
+						if ( o.val().length > max || o.val().length < min ) {
+							o.addClass( "ui-state-error" );
+							updateTips( "Length of " + n + " must be between " + min + " and " + max + "." );
+							return false;
+						} else {
+							return true;
+						}
+					}
+					function checkRegexp( o, regexp, n ) {
+						if ( !( regexp.test( o.val() ) ) ) {
+							o.addClass( "ui-state-error" );
+							updateTips( n );
+							return false;
+						} else {
+							return true;
+						}
+					}
+					function deleteProject() {
+						var valid = true;
+						allFields.removeClass( "ui-state-error" );
+						valid = valid && checkLength( name, "username", 3, 16 );
+						valid = valid && checkLength( password, "password", 5, 16 );
+						valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+						valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+						if ( valid ) {
+							$.getJSON("creator", {
+								what:'delete',
+								project:$("#s_delete option:selected").val(),
+								username:name.val(),
+								password:password.val()
+								}, 
+								function(data) {});
+							dialog.dialog( "close" );
+						}
+						return valid;
+					}
+					dialog = $( "#dialog-form" ).dialog({
+						autoOpen: false, height: 300, width: 350, modal: true,
+						buttons: { 
+							"Delete": deleteProject,
+							Cancel: function() { dialog.dialog( "close" ); } },
+							close: function() { form[ 0 ].reset(); allFields.removeClass( "ui-state-error" ); }
+					});
+					form = dialog.find( "form" ).on( "submit", function( event ) {
+						event.preventDefault();
+						deleteProject();
+					});
+
+
 					
 
+					$.ajaxSetup({
+						async : false
+					});
+
+					$("#loading").show();
+						preload();
+						showCurrentSession();
+					$("#loading").hide();
+					
 				});
 	</script>
 	<div class="maincolumn">
@@ -354,7 +420,19 @@
 		<br> <br>Loading data. Please wait...<br> <br> <img
 			src="static/wait_animated.gif" alt="loading" />
 	</div>
-
+	
+	<div id="dialog-form" title="Authorization required">
+		<p class="validateTips">All form fields are required.</p>
+		<form>
+		<fieldset>
+			<label for="username">Username</label>
+			<input type="text" name="username" id="username" class="text ui-widget-content ui-corner-all"><br>
+			<label for="password">Password</label>
+			<input type="password" name="password" id="password" class="text ui-widget-content ui-corner-all"><br>
+			<input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+		</fieldset>
+		</form>
+	</div>
 
 </body>
 </html>

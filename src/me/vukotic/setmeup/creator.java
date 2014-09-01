@@ -121,5 +121,23 @@ public class creator extends HttpServlet {
 			return;
 		}
 		
+		if (req.getParameter("what").equals("delete")){
+			log.warning("deleting project: " + req.getParameter("project"));
+			Query q = new Query("Admins");
+			List<Entity> lRes = datastore.prepare(q).asList(FetchOptions.Builder.withDefaults());
+			for (Entity result : lRes) {
+				if (result.getProperty("username").equals(req.getParameter("username")) &&
+					result.getProperty("password").equals(req.getParameter("password"))	){
+					log.warning("user is authorized.deleting.");
+					ProjectCache.deleteProject(req.getParameter("project"));
+					log.warning("deleted.");
+				};
+			}
+			
+			//Project p=ProjectCache.getProject(req.getParameter("project"));
+			//resp.getWriter().print(p.getJSON());
+			return;
+		}
+		
 	}
 }
