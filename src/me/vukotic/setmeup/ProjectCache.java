@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.mortbay.log.Log;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
